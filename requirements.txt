@@ -25,9 +25,6 @@ executing==2.0.1
 flake8==7.1.1
 Flask==2.0.1
 gunicorn==23.0.0
-hello @ file:///home/ayu_263_ekb/hello
-hexlet-code @ file:///home/ayu_263_ekb/new-project-49/dist/hexlet_code-0.1.0-py3-none-any.whl#sha256=ff10fa77004f28636eef2a6c602fa599f1488584e492b5b37c4c9ec7d32209c6
-hexlet-python-package @ git+https://github.com/hexlet-boilerplates/python-package.git@ee822d242c86b51cb8069f03c31d4fdd0bd4f4ab
 httplib2==0.20.2
 idna==3.10
 importlib-metadata==4.6.4
