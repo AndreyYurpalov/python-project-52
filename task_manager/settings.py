@@ -27,7 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    'webserver'
+    'webserver',
+    'python-project-52-ycs6.onrender.com'
     ]
 
 
