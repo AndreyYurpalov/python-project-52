@@ -3,6 +3,16 @@
 
 
 {% block login %}
+{% if form.errors %}
+        <div class="alert alert-danger">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
 <div class="container wrapper flex-grow-1">
 
 
@@ -14,13 +24,14 @@
       </h1>
 
 <form method="post">
-  <input type="hidden" name="csrfmiddlewaretoken" value="Mo3ZeCxvgUyRzMVTYSm5iqUHzdzSbGTNFiNuquWxdIJikVw9mcmc5nyO5nzQwheZ">
+     {% csrf_token %}
+
   <div class="mb-3">
       <label class="form-label" for="id_username" >Имя пользователя</label>
       <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" class="form-control" placeholder="Имя пользователя" required id="id_username">
   </div>
     <div class="mb-3">
-        {% csrf_token %}
+
         <label class="form-label" for="id_password">Пароль</label>
         <input type="password" name="password" autocomplete="current-password" class="form-control" placeholder="Пароль" required id="id_password">
     </div>

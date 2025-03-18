@@ -3,6 +3,13 @@
 {% block title %}Список пользователей{% endblock %}
 
 {% block content %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
 
 <div class="container wrapper flex-grow-1">
 
@@ -26,10 +33,14 @@
         <td>{{ user.first_name }}</td>
         <td>{{ user.username }}</td>
         <td>{{ user.date_joined }}</td>
-        <td>
-          <a href="/users/{{ user.id }}/update/">Изменить</a>
-          <br>
-          <a href="/users/{{ user.id }}/delete/">Удалить</a>
+       <td>
+          {% if request.user.is_authenticated %}
+              <a href="/users/{{ user.id }}/update/">Изменить</a>
+              <br>
+              <a href="/users/{{ user.id }}/delete/">Удалить</a>
+          {% else %}
+              <p class="text-danger">У вас нет прав для изменения другого пользователя.</p>
+          {% endif %}
         </td>
       </tr>
   {% endfor %}
@@ -38,5 +49,3 @@
 </div>
 
 {% endblock %}
-
-
