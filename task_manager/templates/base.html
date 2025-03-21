@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}My Project{% endblock %}</title>
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     {% load django_bootstrap5 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
@@ -17,22 +18,15 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <form method="post">
-
-                        <a class="nav-link" href="/login/">Вход</a>
-                        </form>
-                    </li>
-                    <li class="nav-item" >
-                        <form method="post">
-
-                        <a class="nav-link" href="/users/create">Регистрация</a>
-                        </form>
+                        <a class="nav-link" href="{% url 'login' %}">Вход</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/users">Пользователи</a>
+                        <a class="nav-link" href="{% url 'create' %}">Регистрация</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'user_list' %}">Пользователи</a>
                     </li>
                 </ul>
             </div>
@@ -45,5 +39,4 @@
         {% block create %}{% endblock %}
     </div>
 </body>
-
 </html>

@@ -2,7 +2,7 @@
 
 
 
-{% block login %}
+{% block login  %}
 {% if form.errors %}
         <div class="alert alert-danger">
             {% for field, errors in form.errors.items %}
@@ -25,19 +25,10 @@
 
 <form method="post">
      {% csrf_token %}
+     {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Войти</button>
+    </form>
+</div>
 
-  <div class="mb-3">
-      <label class="form-label" for="id_username" >Имя пользователя</label>
-      <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" class="form-control" placeholder="Имя пользователя" required id="id_username">
-  </div>
-    <div class="mb-3">
-
-        <label class="form-label" for="id_password">Пароль</label>
-        <input type="password" name="password" autocomplete="current-password" class="form-control" placeholder="Пароль" required id="id_password">
-    </div>
-    <input class="btn btn-primary" type="submit" value="Войти">
-</form>
-
-    </div>
 
 {% endblock %}
