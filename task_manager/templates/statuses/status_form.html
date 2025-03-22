@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if object %}Изменить статус{% else %}Создать статус{% endif %}
+{% endblock %}
+
+{% block content %}
+    <h1>{% if object %}Изменить статус{% else %}Создать статус{% endif %}</h1>
+
+    <!-- Блок для отображения сообщений -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Форма для создания/редактирования статуса -->
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Отображение формы -->
+        <div class="mb-3">
+            {{ form.name.label_tag }}
+            {{ form.name }}
+            {% if form.name.errors %}
+                <div class="text-danger">
+                    {{ form.name.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Кнопка отправки формы -->
+        <button type="submit" class="btn btn-primary">
+            {% if object %}Сохранить{% else %}Создать{% endif %}
+        </button>
+
+        <!-- Кнопка отмены -->
+        <a href="{% url 'status_list' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+{% endblock %}

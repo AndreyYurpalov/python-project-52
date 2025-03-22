@@ -15,6 +15,7 @@ from django.contrib.auth import get_user_model
 
 
 def index(request):
+    messages.success(request, 'Добро пожаловать на главную страницу!')
     return render(request, 'index.html', context={
         'who': 'Python-project-52',
     })
@@ -43,10 +44,6 @@ class UserCreateView(CreateView):
     form_class = CustomUserCreationForm
     template_name = 'users/user_form.html'
     success_url = reverse_lazy('login')
-
-
-from django.contrib import messages
-from django.shortcuts import redirect
 
 
 class UserUpdateview(LoginRequiredMixin, UpdateView):
@@ -98,6 +95,8 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
             return redirect('user_list')
 
         return super().dispatch(request, *args, **kwargs)
+
+
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
     redirect_authenticated_user = False
@@ -119,3 +118,11 @@ def register(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'index.html', {'form': form})
+
+
+class CustomLogoutView(LogoutView):
+    next_page = 'index'  # Перенаправление на главную страницу после выхода
+
+    def dispatch(self, request, *args, **kwargs):
+        messages.success(request, 'Вы разлогинены.')
+        return super().dispatch(request, *args, **kwargs)
