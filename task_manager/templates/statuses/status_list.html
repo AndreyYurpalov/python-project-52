@@ -26,9 +26,13 @@
         <tr>
             <td>{{ status.id }}</td>
             <td>{{ status.name }}</td>
-            <td>
-                <a href="{% url 'status_update' status.id %}" class="btn btn-sm btn-warning">Изменить</a>
-                <a href="{% url 'status_delete' status.id %}" class="btn btn-sm btn-danger">Удалить</a>
+            <td><form>
+              {% csrf_token %}
+              <a href="/status/{{ status.id }}/update/">Изменить</a>
+              <br>
+              <a href="/status/{{ status.id }}/delete/">Удалить</a>
+           </form>
+
             </td>
         </tr>
         {% endfor %}

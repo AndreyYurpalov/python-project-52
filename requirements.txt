@@ -4,3 +4,6 @@ psycopg2-binary==2.9.10
 python-dotenv==1.0.1
 django-bootstrap5==25.1
 asgiref<4,>=3.8.1
+sqlparse>=0.3.1
+typing-extensions>=4
+packaging

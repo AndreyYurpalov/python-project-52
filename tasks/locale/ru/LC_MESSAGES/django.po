@@ -1,0 +1,26 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: task-manager\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: ru\n"
+
+msgid "Name"
+msgstr "Имя"
+
+msgid "Description"
+msgstr "Описание"
+
+msgid "Status"
+msgstr "Статус"
+
+msgid "Executor"
+msgstr "Исполнитель"
+
+msgid "Labels"
+msgstr "Метки"
+
+msgid "Create task"
+msgstr "Создать задачу"
+
+msgid "Task created successfully!"
+msgstr "Задача успешно создана!"

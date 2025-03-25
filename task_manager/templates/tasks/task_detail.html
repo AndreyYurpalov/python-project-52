@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{{ task.name }}</h1>
+<p>{{ task.description }}</p>
+<p>Статус: {{ task.get_status_display }}</p>
+<p>Автор: {{ task.author.username }}</p>
+<p>Назначена: {{ task.assigned_to.username }}</p>
+<a href="{% url 'task_list' %}">Назад к списку</a>
+{% endblock %}

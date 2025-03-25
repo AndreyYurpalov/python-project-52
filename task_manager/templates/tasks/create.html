@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+<div class="container wrapper flex-grow-1">
+    <h1 class="my-4">Создать задачу</h1>
+    
+    <form method="post" class="form">
+        {% csrf_token %}
+        
+        {% bootstrap_form form layout='horizontal' %}
+        
+        <div class="form-group row">
+            <div class="col-sm-10 offset-sm-2">
+                <button type="submit" class="btn btn-primary">
+                    Создать
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

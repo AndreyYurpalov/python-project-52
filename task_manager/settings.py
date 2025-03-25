@@ -50,19 +50,25 @@ INSTALLED_APPS = [
     'django_bootstrap5',
     'task_manager',
     'statuses.apps.StatusesConfig',
+    'tasks',
+    'labels',
     ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'task_manager.urls'
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+SESSION_COOKIE_SECURE = False  # Для разработки
 
 TEMPLATES = [
     {
@@ -124,6 +130,8 @@ LANGUAGES = [
     ('ru', _('Russian')),
 ]
 
+
+
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
@@ -144,3 +152,19 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'index'
 
 LOGOUT_REDIRECT_URL = 'index'
+
+LOGGING = {
+    'version': 1,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.contrib.messages': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}

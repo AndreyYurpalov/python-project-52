@@ -22,7 +22,9 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('', include('statuses.urls')),
+    path('labels/', include('labels.urls')),
+    path('tasks/', include('tasks.urls')),
+    path('statuses/', include('statuses.urls')),
     path('', include('django.contrib.auth.urls')),
     path('users/', views.UserListView.as_view(), name='user_list'),
     path('users/create', views.UserCreateView.as_view(), name='create'),

@@ -1,38 +1,23 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from django.contrib.auth.forms import UserCreationForm
+
 from django.contrib import messages
-from django import forms
+
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from django.contrib.auth import get_user_model
-
+from .forms import CustomUserCreationForm, CustomUserChangeForm
+from django.http import HttpResponseRedirect
+from django.contrib.auth import login as auth_login
 
 def index(request):
-    messages.success(request, 'Добро пожаловать на главную страницу!')
+    messages.success(request, 'Тестовое сообщение для проверки massage!')
     return render(request, 'index.html', context={
         'who': 'Python-project-52',
     })
-
-class CustomUserCreationForm(UserCreationForm):
-    first_name = forms.CharField(max_length=30, required=True, help_text='Обязательное поле.')
-    last_name = forms.CharField(max_length=30, required=True, help_text='Обязательное поле.')
-    email = forms.EmailField(max_length=254, required=False)
-
-    class Meta:
-        model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
-
-class CustomUserChangeForm(UserChangeForm):
-    class Meta:
-        model = User
-        fields = ['username', 'first_name', 'last_name', 'email']
 
 class UserListView(ListView):
     model = User
@@ -97,14 +82,30 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class CustomLoginView(LoginView):
+"""class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
     redirect_authenticated_user = False
     next_page = reverse_lazy('index')
 
     def form_valid(self, form):
+        response = super().form_valid(form)
         messages.success(self.request, 'Вы залогинены.')
-        return super().form_valid(form)
+        return response"""
+
+
+class CustomLoginView(LoginView):
+    template_name = 'registration/login.html'
+    redirect_authenticated_user = True  # Измените на True для лучшей практики
+
+    def form_valid(self, form):
+        """Security check complete. Log the user in."""
+        auth_login(self.request, form.get_user())
+        messages.success(self.request, 'Вы успешно вошли в систему!')
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        url = self.get_redirect_url()
+        return url if url else reverse_lazy('index')
 
 
 def register(request):
