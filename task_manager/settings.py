@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from django.utils.translation import gettext_lazy as _
+from django.contrib.messages import constants as messages
 
 load_dotenv()
 
@@ -49,9 +50,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_bootstrap5',
     'task_manager',
-    'statuses.apps.StatusesConfig',
+    'statuses',
     'tasks',
     'labels',
+
     ]
 
 MIDDLEWARE = [
@@ -153,18 +155,12 @@ LOGIN_REDIRECT_URL = 'index'
 
 LOGOUT_REDIRECT_URL = 'index'
 
-LOGGING = {
-    'version': 1,
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django.contrib.messages': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-        },
-    },
+
+
+MESSAGE_TAGS = {
+    messages.SUCCESS: 'alert-success',
+    messages.ERROR: 'alert-danger',
+    messages.WARNING: 'alert-warning',
+    messages.INFO: 'alert-info',
+    messages.DEBUG: 'alert-secondary',
 }

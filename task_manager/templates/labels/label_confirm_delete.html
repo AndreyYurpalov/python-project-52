@@ -1,10 +1,17 @@
-{% extends 'base.html' %}
+<!-- labels/templates/labels/label_confirm_delete.html -->
+{% extends "base.html" %}
+
 
 {% block content %}
-<h1>Удалить метку "{{ label.name }}"?</h1>
+<h1>Удаление метки</h1>
+
+
 <form method="post">
     {% csrf_token %}
-    <button type="submit">Удалить</button>
-    <a href="{% url 'label_list' %}">Отмена</a>
+    <p>Вы уверены, что хотите удалить метку {{ label.name }}?</p>
+    <button type="submit" class="btn btn-danger">Да, удалить</button>
 </form>
+
 {% endblock %}
+
+

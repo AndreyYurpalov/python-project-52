@@ -15,7 +15,7 @@ def label_create(request):
         form = LabelForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Метка успешно создана!')
+            messages.success(request, 'Метка успешно создана')
             return redirect('label_list')
     else:
         form = LabelForm()
@@ -28,20 +28,26 @@ def label_update(request, pk):
         form = LabelForm(request.POST, instance=label)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Метка успешно обновлена!')
+            messages.success(request, 'Метка успешно обновлена')
             return redirect('label_list')
     else:
         form = LabelForm(instance=label)
-    return render(request, 'labels/label_form.html', {'form': form})
+    return render(request, 'labels/label_form.html',
+                  {'form': form,
+                  'object': object})
 
 @login_required
 def label_delete(request, pk):
     label = get_object_or_404(Label, pk=pk)
-    if label.tasks.exists():  # Проверяем, есть ли связанные задачи
-        messages.error(request, 'Невозможно удалить метку, связанную с задачами.')
-        return redirect('label_list')
     if request.method == 'POST':
-        label.delete()
-        messages.success(request, 'Метка успешно удалена!')
+        # Проверяем связь только при подтверждении удаления
+        if label.tasks.exists():
+            messages.error(request, 'Невозможно удалить метку, потому что она используется')
+            return redirect('label_list')
+        else:
+            label.delete()
+            messages.success(request, 'Метка успешно удалена')
         return redirect('label_list')
+
+        # Для GET-запроса просто показываем страницу подтверждения
     return render(request, 'labels/label_confirm_delete.html', {'label': label})

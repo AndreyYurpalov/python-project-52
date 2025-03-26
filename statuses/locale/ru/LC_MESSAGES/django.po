@@ -1,0 +1,17 @@
+msgid "Statuses"
+msgstr "Статусы"
+
+msgid "Create status"
+msgstr "Создать статус"
+
+msgid "Status successfully created"
+msgstr "Статус успешно создан"
+
+msgid "Status successfully updated"
+msgstr "Статус успешно обновлён"
+
+msgid "Status successfully deleted"
+msgstr "Статус успешно удалён"
+
+msgid "Cannot delete status because it is in use"
+msgstr "Невозможно удалить статус, так как он используется"

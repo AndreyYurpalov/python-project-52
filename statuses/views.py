@@ -1,53 +1,67 @@
 # statuses/views.py
-from django.urls import reverse_lazy
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from .models import Status
 from .forms import StatusForm
 
-class StatusListView(LoginRequiredMixin, ListView):
-    model = Status
-    template_name = 'statuses/status_list.html'
-    context_object_name = 'statuses'
+@login_required
+def status_list(request):
+    statuses = Status.objects.all()
+    return render(request, 'statuses/status_list.html', {'statuses': statuses})
 
-class StatusCreateView(CreateView):
-    model = Status
-    form_class = StatusForm
-    template_name = 'statuses/status_form.html'
-    success_url = reverse_lazy('status_list')  # Редирект на список статусов
+@login_required
+def status_create(request):
+    if request.method == 'POST':
+        form = StatusForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Статус успешно создан')
+            return redirect('statuses:list')
+    else:
+        form = StatusForm()
+    return render(request, 'statuses/status_form.html', {'form': form})
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Статус успешно создан.')
-        return super().form_valid(form)
+@login_required
+def status_update(request, pk):
+    status = get_object_or_404(Status, pk=pk)
+    if request.method == 'POST':
+        form = StatusForm(request.POST, instance=status)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'статус успешно обнавлен')
+            return redirect('statuses:list')
+    else:
+        form = StatusForm(instance=status)
+    return render(request, 'statuses/status_form.html',
+                  {'form': form, 'object': object})
 
-    def form_invalid(self, form):
-        messages.error(self.request, 'Ошибка при создании статуса.')
-        return super().form_invalid(form)
 
-class StatusUpdateView(LoginRequiredMixin, UpdateView):
-    model = Status
-    form_class = StatusForm
-    template_name = 'statuses/status_form.html'
-    success_url = reverse_lazy('status_list')
+@login_required
+def status_delete(request, pk):
+    status = get_object_or_404(Status, pk=pk)
+    form = StatusForm(request.POST, instance=status)
+    if request.method == 'POST':
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Статус успешно обновлён.')
-        return super().form_valid(form)
+        # Проверяем, используется ли статус в задачах
+        if hasattr(status, 'task_set') and status.task_set.exists():
+            return redirect('statuses:list')
 
-    def form_invalid(self, form):
-        messages.error(self.request, 'Ошибка при обновлении статуса.')
-        return super().form_invalid(form)
+        try:
+            status.delete()
+            messages.success(request, 'Статус успешно удалён')
+            return redirect('statuses:list')
+        except Exception as e:
+            messages.error(
+                request,
+                f'Невозможно удалить статус, потому что он используется'
+            )
+            return redirect('statuses:list')
 
-class StatusDeleteView(LoginRequiredMixin, DeleteView):
-    model = Status
-    template_name = 'statuses/status_confirm_delete.html'
-    success_url = reverse_lazy('status_list')
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Статус успешно удалён.')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, 'Ошибка при удалении статуса.')
-        return super().form_invalid(form)
+    # Для GET-запроса показываем страницу подтверждения
+    is_used = hasattr(status, 'task_set') and status.task_set.exists()
+    return render(request, 'statuses/status_confirm_delete.html', {
+        'form': form,
+        'status': status,
+        'is_used': is_used
+    })

@@ -1,10 +1,12 @@
 # statuses/urls.py
 from django.urls import path
-from .views import StatusListView, StatusCreateView, StatusUpdateView, StatusDeleteView
+from . import views
+
+app_name = 'statuses'
 
 urlpatterns = [
-    path('', StatusListView.as_view(), name='status_list'),
-    path('create/', StatusCreateView.as_view(), name='status_create'),
-    path('<int:pk>/update/', StatusUpdateView.as_view(), name='status_update'),
-    path('<int:pk>/delete/', StatusDeleteView.as_view(), name='status_delete'),
+    path('', views.status_list, name='list'),
+    path('create/', views.status_create, name='create'),
+    path('<int:pk>/update/', views.status_update, name='update'),
+    path('<int:pk>/delete/', views.status_delete, name='delete'),
 ]

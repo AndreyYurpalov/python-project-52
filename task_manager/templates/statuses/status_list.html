@@ -1,24 +1,26 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Список статусов</h1>
-
 {% if messages %}
     {% for message in messages %}
-        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+        <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
             {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     {% endfor %}
 {% endif %}
+<h1>Статусы</h1>
 
-<a href="{% url 'status_create' %}" class="btn btn-primary">Создать статус</a>
 
-<table class="table">
+
+<a href="{% url 'statuses:create' %}" class="btn btn-primary">Создать статус</a>
+
+<table class="table table-striped">
     <thead>
         <tr>
             <th>ID</th>
-            <th>Название</th>
-            <th>Действия</th>
+            <th>Имя</th>
+            <th>Дата создания</th>
         </tr>
     </thead>
     <tbody>
@@ -26,11 +28,13 @@
         <tr>
             <td>{{ status.id }}</td>
             <td>{{ status.name }}</td>
+            <td>{{ status.created_at }}</td>
             <td><form>
               {% csrf_token %}
-              <a href="/status/{{ status.id }}/update/">Изменить</a>
+                <a href="{% url 'statuses:update' status.id %}">Изменить</a>
+
               <br>
-              <a href="/status/{{ status.id }}/delete/">Удалить</a>
+              <a href="{% url 'statuses:delete' status.id %}">Удалить</a>
            </form>
 
             </td>
