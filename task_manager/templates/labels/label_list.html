@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
- {% load django_bootstrap5 %}
+{% load i18n %}
 
 {% block content %}
 {% if messages %}
@@ -10,41 +10,39 @@
         </div>
     {% endfor %}
 {% endif %}
+<div class="container">
+    <h1 class="my-4">{% trans "Метки" %}</h1>
 
+    <a href="{% url 'labels:create' %}" class="btn btn-primary mb-3">
+        {% trans "Создать метку" %}
+    </a>
 
-<div class="container wrapper flex-grow-1">
-<h1>Метки</h1>
-    <a href="{% url 'label_create' %}" class="btn btn-primary">Создать метку</a>
-
-
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Имя</th>
-      <th>Дата создания</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-
-  {% for label in labels %}
-      <tr>
-        <td>{{ label.id }}</td>
-        <td>{{ label.name }}</td>
-        <td>{{ label.created_at }}</td>
-       <td>
-           <form>
-              {% csrf_token %}
-              <a href="/labels/{{ label.id }}/update/">Изменить</a>
-              <br>
-              <a href="/labels/{{ label.id }}/delete/">Удалить</a>
-           </form>
-        </td>
-      </tr>
-     {% endfor %}
-  </tbody>
-</table>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>{% trans "Имя" %}</th>
+                <th>{% trans "Дата создания" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for label in labels %}
+            <tr>
+                <td>{{ label.id }}</td>
+                <td>{{ label.name }}</td>
+                <td>{{ label.created_at }}</td>
+                <td>
+                    <a href="{% url 'labels:update' label.pk %}">
+                        {% trans "Изменить" %}
+                    </a>
+                    <br>
+                    <a href="{% url 'labels:delete' label.pk %}">
+                        {% trans "Удалить" %}
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-
 {% endblock %}

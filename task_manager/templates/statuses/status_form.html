@@ -3,9 +3,6 @@
 <!-- text -->
 {% extends 'base.html' %}
 
-{% block title %}
-    {% if object %}Изменение статуса{% else %}Создать статус{% endif %}
-{% endblock %}
 
 {% block content %}
 <h1>{% if object %}Изменение статуса{% else %}Создать статус{% endif %}</h1>

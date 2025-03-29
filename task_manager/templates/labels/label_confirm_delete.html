@@ -1,17 +1,20 @@
-<!-- labels/templates/labels/label_confirm_delete.html -->
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
-<h1>Удаление метки</h1>
+  <h1 class="my-4">{% trans 'Удаление метки' %}</h1>
 
+  {% if is_used %}
+    <div class="alert alert-danger">
+      {% trans 'Невозможно удалить метку, потому что она используется в задаче' %}
+    </div>
+    <a href="{% url 'labels:list' %}" class="btn btn-primary">{% trans 'Вернуться к списку' %}</a>
+  {% else %}
+    <p>{% trans 'Вы уверены, что хотите удалить' %} "{{ label.name }}"?</p>
+    <form method="post">
+      {% csrf_token %}
+      <input type="submit" class="btn btn-danger" value="{% trans 'Да, удалить' %}">
 
-<form method="post">
-    {% csrf_token %}
-    <p>Вы уверены, что хотите удалить метку {{ label.name }}?</p>
-    <button type="submit" class="btn btn-danger">Да, удалить</button>
-</form>
-
+    </form>
+  {% endif %}
 {% endblock %}
-
-

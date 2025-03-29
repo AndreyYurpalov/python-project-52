@@ -1,26 +1,6 @@
-"""from django import forms
-from .models import Task
-from labels.models import Label
-
-
-class TaskForm(forms.ModelForm):
-    labels = forms.ModelMultipleChoiceField(
-        queryset=Label.objects.all(),
-        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
-        required=False
-    )
-
-    class Meta:
-        model = Task
-        fields = ['name', 'description', 'status', 'assigned_to', 'labels']"""
-
-
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from .models import Task
-from statuses.models import Status
-from .models import User
-from labels.models import Label
 
 
 class TaskForm(forms.ModelForm):

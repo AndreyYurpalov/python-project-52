@@ -1,68 +1,113 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
+<div class="container mt-4">
+    <h1 class="my-4">{{ title }}</h1>
 
+    <!-- Форма фильтрации -->
+    <form method="get" class="mb-4">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label for="status" class="form-label">{% trans 'Статус' %}</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">{% trans 'Все статусы' %}</option>
+                    {% for status in statuses %}
+                        <option value="{{ status.id }}"
+                            {% if current_status == status.id|stringformat:"s" %}selected{% endif %}>
+                            {{ status.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
+            <div class="col-md-3">
+                <label for="executor" class="form-label">{% trans 'Исполнитель' %}</label>
+                <select name="executor" id="executor" class="form-select">
+                    <option value="">{% trans 'Все исполнители' %}</option>
+                    {% for executor in executors %}
+                        <option value="{{ executor.id }}"
+                            {% if current_executor == executor.id|stringformat:"s" %}selected{% endif %}>
+                            {{ executor }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="col-md-3">
+                <label for="label" class="form-label">{% trans 'Метка' %}</label>
+                <select name="label" id="label" class="form-select">
+                    <option value="">{% trans 'Все метки' %}</option>
+                    {% for label in labels %}
+                        <option value="{{ label.id }}"
+                            {% if current_label == label.id|stringformat:"s" %}selected{% endif %}>
+                            {{ label.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <div class="form-check mt-4 pt-2">
+                    <input class="form-check-input" type="checkbox" name="own_tasks" id="own_tasks"
+                           {% if show_own_tasks %}checked{% endif %}>
+                    <label class="form-check-label" for="own_tasks">
+                        {% trans 'Только мои задачи' %}
+                    </label>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">{% trans 'Применить фильтры' %}</button>
+                <a href="{% url 'tasks:list' %}" class="btn btn-secondary">{% trans 'Сбросить' %}</a>
+            </div>
         </div>
-    {% endfor %}
-{% endif %}
+    </form>
 
-
-
-
-
-
-<h1>Задачи</h1>
-<a href="{% url 'task_create' %}" class="btn btn-primary">Создать задачу</a>
-
-<div class="container wrapper flex-grow-1">
-
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Имя</th>
-      <th>Статус</th>
-      <th>Автор</th>
-      <th>Исполнитель</th>
-      <th>Дата создания</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-
-  {% for task in tasks %}
-      <tr>
-        <td>{{ task.id }}</td>
-        <td><a href="/tasks/{{ task.id }}/">{{ task.name }}</a></td>
-        <td>{{ task.status }}</td>
-        <td><a>{{ task.author }}</a></td>
-        <td><a>{{ task.executor}}</a></td>
-        <td>{{ task.created_at }}</td>
-
-
-       <td>
-           <form>
+    <!-- Список задач -->
+    {% if tasks %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>{% trans 'ID' %}</th>
+                    <th>{% trans 'Имя' %}</th>
+                    <th>{% trans 'Статус' %}</th>
+                    <th>{% trans 'Автор' %}</th>
+                    <th>{% trans 'Исполнитель' %}</th>
+                    <th>{% trans 'Дата создания' %}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>{{ task.id }}</td>
+                    <td><a href="{% url 'tasks:detail' task.pk %}">{{ task.name }}</a></td>
+                    <td>{{ task.status.name }}</td>
+                    <td>{{ task.author}}</td>
+                    <td>
+                        {% if task.executor %}
+                            {{ task.executor }}
+                        {% else %}
+                            {% trans 'Не назначен' %}
+                        {% endif %}
+                    </td>
+                    <td>{{ task.created_at|date:"d.m.Y H:i" }}</td>
+                    <td>
+                        <form>
               {% csrf_token %}
-              <a href="/tasks/{{ task.id }}/update/">Изменить</a>
+                <a href="{% url 'tasks:update' task.id %}">Изменить</a>
+
               <br>
-              <a href="/tasks/{{ task.id }}/delete/">Удалить</a>
+              <a href="{% url 'tasks:delete' task.id %}">Удалить</a>
            </form>
-        </td>
-      </tr>
-     {% endfor %}
-  </tbody>
-</table>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">{% trans 'Задачи не найдены' %}</div>
+    {% endif %}
 </div>
-
 {% endblock %}
-
-
-
-

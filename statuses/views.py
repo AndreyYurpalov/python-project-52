@@ -1,67 +1,74 @@
-# statuses/views.py
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
+from django.shortcuts import redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Status
 from .forms import StatusForm
-
-@login_required
-def status_list(request):
-    statuses = Status.objects.all()
-    return render(request, 'statuses/status_list.html', {'statuses': statuses})
-
-@login_required
-def status_create(request):
-    if request.method == 'POST':
-        form = StatusForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Статус успешно создан')
-            return redirect('statuses:list')
-    else:
-        form = StatusForm()
-    return render(request, 'statuses/status_form.html', {'form': form})
-
-@login_required
-def status_update(request, pk):
-    status = get_object_or_404(Status, pk=pk)
-    if request.method == 'POST':
-        form = StatusForm(request.POST, instance=status)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'статус успешно обнавлен')
-            return redirect('statuses:list')
-    else:
-        form = StatusForm(instance=status)
-    return render(request, 'statuses/status_form.html',
-                  {'form': form, 'object': object})
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 
-@login_required
-def status_delete(request, pk):
-    status = get_object_or_404(Status, pk=pk)
-    form = StatusForm(request.POST, instance=status)
-    if request.method == 'POST':
+class StatusListView(LoginRequiredMixin, ListView):
+    model = Status
+    template_name = 'statuses/status_list.html'
+    context_object_name = 'statuses'
 
-        # Проверяем, используется ли статус в задачах
-        if hasattr(status, 'task_set') and status.task_set.exists():
-            return redirect('statuses:list')
+    def get_queryset(self):
+        return Status.objects.all().order_by('name')
 
-        try:
-            status.delete()
-            messages.success(request, 'Статус успешно удалён')
-            return redirect('statuses:list')
-        except Exception as e:
-            messages.error(
-                request,
-                f'Невозможно удалить статус, потому что он используется'
-            )
-            return redirect('statuses:list')
+class StatusCreateView(LoginRequiredMixin, CreateView):
+    model = Status
+    form_class = StatusForm
+    template_name = 'statuses/status_form.html'
+    success_url = reverse_lazy('statuses:list')
 
-    # Для GET-запроса показываем страницу подтверждения
-    is_used = hasattr(status, 'task_set') and status.task_set.exists()
-    return render(request, 'statuses/status_confirm_delete.html', {
-        'form': form,
-        'status': status,
-        'is_used': is_used
-    })
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _('Статус успешно создан'))
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = _('Создание статуса')
+        return context
+
+class StstusUpdateView(LoginRequiredMixin, UpdateView):
+    model = Status
+    #fields = ['name']
+    form_class = StatusForm
+    template_name = 'statuses/status_form.html'
+    success_url = reverse_lazy('statuses:list')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _('Метка успешно изменена'))
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = _('Изменение статуса')
+        return context
+
+class StatusDeleteView(LoginRequiredMixin, DeleteView):
+    model = Status
+
+    template_name = 'statuses/status_confirm_delete.html'
+    success_url = reverse_lazy('statuses:list')
+    context_object_name = 'status'
+
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if self.object.tasks.exists():
+            messages.error(request, _('Невозможно удалить статус использующийся в задаче'))
+            return redirect(self.success_url)
+
+        messages.success(request, _('Статус успешно удален'))
+        return super().post(request,*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = _('Удаление статуса')
+        context['is_used'] = self.object.tasks.exists()
+        return context

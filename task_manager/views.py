@@ -31,7 +31,7 @@ class UserCreateView(CreateView):
     success_url = reverse_lazy('login')
 
 
-class UserUpdateview(LoginRequiredMixin, UpdateView):
+class UserUpdateView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = CustomUserChangeForm
     template_name = 'users/user_update.html'

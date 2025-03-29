@@ -11,13 +11,13 @@ class LabelTests(TestCase):
 
     def test_label_list_view(self):
         self.client.login(username='testuser', password='12345')
-        response = self.client.get(reverse('label_list'))
+        response = self.client.get(reverse('labels:list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Test Label')
 
     def test_label_create_view(self):
         self.client.login(username='testuser', password='12345')
-        response = self.client.post(reverse('label_create'), {
+        response = self.client.post(reverse('labels:create'), {
             'name': 'New Label',
         })
         self.assertEqual(response.status_code, 302)
@@ -25,7 +25,7 @@ class LabelTests(TestCase):
 
     def test_label_update_view(self):
         self.client.login(username='testuser', password='12345')
-        response = self.client.post(reverse('label_update', args=[self.label.pk]), {
+        response = self.client.post(reverse('labels:update', args=[self.label.pk]), {
             'name': 'Updated Label',
         })
         self.assertEqual(response.status_code, 302)
@@ -34,6 +34,6 @@ class LabelTests(TestCase):
 
     def test_label_delete_view(self):
         self.client.login(username='testuser', password='12345')
-        response = self.client.post(reverse('label_delete', args=[self.label.pk]))
+        response = self.client.post(reverse('labels:delete', args=[self.label.pk]))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Label.objects.filter(pk=self.label.pk).exists())

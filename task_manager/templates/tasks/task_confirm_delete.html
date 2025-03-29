@@ -1,10 +1,19 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
-<h1>Удалить задачу "{{ task.name }}"?</h1>
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Удалить</button>
-    <a href="{% url 'task_list' %}">Отмена</a>
-</form>
+  <h1 class="my-4">{% trans 'Удаление задачи' %}</h1>
+  {% if is_used %}
+    <div class="alert alert-danger">
+      {% trans 'Невозможно удалить задачу не автором' %}
+    </div>
+    <a href="{% url 'tasks:list' %}" class="btn btn-primary">{% trans 'Вернуться к списку задач' %}</a>
+  {% else %}
+    <p>{% trans 'Вы уверены, что хотите удалить' %} "{{ task.name }}"?</p>
+    <form method="post">
+      {% csrf_token %}
+      <input type="submit" class="btn btn-danger" value="{% trans 'Да, удалить' %}">
+
+    </form>
+  {% endif %}
 {% endblock %}

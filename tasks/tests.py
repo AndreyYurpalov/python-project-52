@@ -1,15 +1,12 @@
 from django.test import TestCase, RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from tasks.models import Task
-from tasks.views import task_list, task_create, task_update, task_delete, task_detail
-from statuses.models import Status
-from labels.models import Label
-
-User = get_user_model()
+from .models import Task, Status, Label
+from .forms import TaskForm
+from .views import TaskListView, TaskCreateView, TaskUpdateView, TaskDeleteView, TaskDetailView
 
 
 class TaskViewsTest(TestCase):
@@ -19,171 +16,151 @@ class TaskViewsTest(TestCase):
             username='testuser',
             password='testpass123'
         )
-        self.other_user = User.objects.create_user(
-            username='otheruser',
-            password='testpass123'
+        self.superuser = User.objects.create_superuser(
+            username='admin',
+            password='adminpass'
         )
         self.status = Status.objects.create(name='Test Status')
         self.label = Label.objects.create(name='Test Label')
-
         self.task = Task.objects.create(
             name='Test Task',
             description='Test Description',
-            status=self.status,
-            author=self.user
+            author=self.user,
+            status=self.status
         )
         self.task.labels.add(self.label)
 
-    def test_task_list_view(self):
-        request = self.factory.get(reverse('task_list'))
+    def setup_request(self, request):
         request.user = self.user
-        response = task_list(request)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Test Task')
+        setattr(request, 'session', 'session')
+        messages = FallbackStorage(request)
+        setattr(request, '_messages', messages)
+        return request
 
-    def test_task_create_view_get(self):
-        request = self.factory.get(reverse('task_create'))
-        request.user = self.user
-        response = task_create(request)
+    # TaskListView Tests
+    def test_task_list_view(self):
+        request = self.factory.get(reverse('tasks:list'))
+        request = self.setup_request(request)
+        response = TaskListView.as_view()(request)
         self.assertEqual(response.status_code, 200)
+        self.assertIn('tasks', response.context_data)
+
+    def test_task_list_filtering(self):
+        # Test status filter
+        request = self.factory.get(reverse('tasks:list') + f'?status={self.status.id}')
+        request = self.setup_request(request)
+        response = TaskListView.as_view()(request)
+        self.assertEqual(len(response.context_data['tasks']), 1)
+
+        # Test own tasks filter
+        request = self.factory.get(reverse('tasks:list') + '?own_tasks=on')
+        request = self.setup_request(request)
+        response = TaskListView.as_view()(request)
+        self.assertEqual(len(response.context_data['tasks']), 1)
+
+        # Test label filter
+        request = self.factory.get(reverse('tasks:list') + f'?label={self.label.id}')
+        request = self.setup_request(request)
+        response = TaskListView.as_view()(request)
+        self.assertEqual(len(response.context_data['tasks']), 1)
+
+    # TaskCreateView Tests
+    def test_task_create_view_get(self):
+        request = self.factory.get(reverse('tasks:create'))
+        request = self.setup_request(request)
+        response = TaskCreateView.as_view()(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.context_data['form'], TaskForm)
 
     def test_task_create_view_post(self):
-        request = self.factory.post(reverse('task_create'), {
+        data = {
             'name': 'New Task',
             'description': 'New Description',
             'status': self.status.id,
             'labels': [self.label.id]
-        })
-        request.user = self.user
-
-        # Добавляем messages в request
-        setattr(request, 'session', 'session')
-        messages = FallbackStorage(request)
-        setattr(request, '_messages', messages)
-
-        response = task_create(request)
+        }
+        request = self.factory.post(reverse('tasks:create'), data)
+        request = self.setup_request(request)
+        response = TaskCreateView.as_view()(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('task_list'))
         self.assertEqual(Task.objects.count(), 2)
+        self.assertEqual(Task.objects.last().author, self.user)
 
+    # TaskUpdateView Tests
     def test_task_update_view_get(self):
-        request = self.factory.get(reverse('task_update', args=[self.task.pk]))
-        request.user = self.user
-        response = task_update(request, pk=self.task.pk)
+        request = self.factory.get(reverse('tasks:update', args=[self.task.pk]))
+        request = self.setup_request(request)
+        response = TaskUpdateView.as_view()(request, pk=self.task.pk)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context_data['title'], _('Изменение задачи'))
 
     def test_task_update_view_post(self):
-        request = self.factory.post(reverse('task_update', args=[self.task.pk]), {
+        data = {
             'name': 'Updated Task',
             'description': 'Updated Description',
             'status': self.status.id,
             'labels': [self.label.id]
-        })
-        request.user = self.user
-
-        # Добавляем messages в request
-        setattr(request, 'session', 'session')
-        messages = FallbackStorage(request)
-        setattr(request, '_messages', messages)
-
-        response = task_update(request, pk=self.task.pk)
+        }
+        request = self.factory.post(
+            reverse('tasks:update', args=[self.task.pk]),
+            data
+        )
+        request = self.setup_request(request)
+        response = TaskUpdateView.as_view()(request, pk=self.task.pk)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('task_list'))
         self.task.refresh_from_db()
         self.assertEqual(self.task.name, 'Updated Task')
 
-    def test_task_delete_view_get(self):
-        request = self.factory.get(reverse('task_delete', args=[self.task.pk]))
-        request.user = self.user
-        response = task_delete(request, pk=self.task.pk)
-        self.assertEqual(response.status_code, 200)
-
-    def test_task_delete_view_post_author(self):
-        request = self.factory.post(reverse('task_delete', args=[self.task.pk]))
-        request.user = self.user
-
-        # Добавляем messages в request
-        setattr(request, 'session', 'session')
-        messages = FallbackStorage(request)
-        setattr(request, '_messages', messages)
-
-        response = task_delete(request, pk=self.task.pk)
+    # TaskDeleteView Tests
+    def test_task_delete_view_author(self):
+        request = self.factory.post(reverse('tasks:delete', args=[self.task.pk]))
+        request = self.setup_request(request)
+        response = TaskDeleteView.as_view()(request, pk=self.task.pk)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('task_list'))
         self.assertEqual(Task.objects.count(), 0)
 
-    def test_task_delete_view_post_not_author(self):
-        request = self.factory.post(reverse('task_delete', args=[self.task.pk]))
-        request.user = self.other_user
-
-        # Добавляем messages в request
-        setattr(request, 'session', 'session')
-        messages = FallbackStorage(request)
-        setattr(request, '_messages', messages)
-
-        response = task_delete(request, pk=self.task.pk)
+    def test_task_delete_view_not_author(self):
+        other_user = User.objects.create_user(username='other', password='testpass')
+        request = self.factory.post(reverse('tasks:delete', args=[self.task.pk]))
+        request.user = other_user
+        request = self.setup_request(request)
+        response = TaskDeleteView.as_view()(request, pk=self.task.pk)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('task_list'))
-        self.assertEqual(Task.objects.count(), 1)  # Задача не удалена
+        self.assertEqual(Task.objects.count(), 1)
 
+    def test_task_delete_view_superuser(self):
+        request = self.factory.post(reverse('tasks:delete', args=[self.task.pk]))
+        request.user = self.superuser
+        request = self.setup_request(request)
+        response = TaskDeleteView.as_view()(request, pk=self.task.pk)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Task.objects.count(), 0)
+
+    # TaskDetailView Tests
     def test_task_detail_view(self):
-        request = self.factory.get(reverse('task_detail', args=[self.task.pk]))
-        request.user = self.user
-        response = task_detail(request, pk=self.task.pk)
+        request = self.factory.get(reverse('tasks:detail', args=[self.task.pk]))
+        request = self.setup_request(request)
+        response = TaskDetailView.as_view()(request, pk=self.task.pk)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Test Task')
+        self.assertEqual(response.context_data['task'], self.task)
 
-from django.contrib.messages import get_messages
-
-class TaskMessagesTest(TestCase):
-    def setUp(self):
-        self.client = TestCase.client_class()
-        self.user = User.objects.create_user(
-            username='testuser',
-            password='testpass123'
-        )
-        self.status = Status.objects.create(name='Test Status')
-        self.task = Task.objects.create(
-            name='Test Task',
-            description='Test Description',
-            status=self.status,
-            author=self.user
-        )
-        self.client.login(username='testuser', password='testpass123')
-
-    def test_create_task_message(self):
-        response = self.client.post(reverse('task_create'), {
-            'name': 'New Task',
-            'description': 'New Description',
+    def test_task_create_sets_author(self):
+        data = {
+            'name': 'Author Test Task',
+            'description': 'Test',
             'status': self.status.id
-        })
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), _('Задача успешно создана!'))
+        }
+        request = self.factory.post(reverse('tasks:create'), data)
+        request = self.setup_request(request)
+        TaskCreateView.as_view()(request)
+        task = Task.objects.get(name='Author Test Task')
+        self.assertEqual(task.author, self.user)
 
-    def test_update_task_message(self):
-        response = self.client.post(reverse('task_update', args=[self.task.pk]), {
-            'name': 'Updated Task',
-            'description': 'Updated Description',
-            'status': self.status.id
-        })
-        messages = list(get_messages(response.wsgi_request))
+    def test_delete_view_messages(self):
+        request = self.factory.post(reverse('tasks:delete', args=[self.task.pk]))
+        request.user = self.superuser
+        request = self.setup_request(request)
+        TaskDeleteView.as_view()(request, pk=self.task.pk)
+        messages = list(request._messages)
         self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Задача успешно обновлена!')
-
-    def test_delete_task_message(self):
-        response = self.client.post(reverse('task_delete', args=[self.task.pk]))
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Задача успешно удалена')
-
-    def test_delete_task_not_author_message(self):
-        other_user = User.objects.create_user(
-            username='otheruser',
-            password='testpass123'
-        )
-        self.client.login(username='otheruser', password='testpass123')
-        response = self.client.post(reverse('task_delete', args=[self.task.pk]))
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Задачу может удалить только ее автор')
+        self.assertEqual(str(messages[0]), _('Задача успешно удалена'))

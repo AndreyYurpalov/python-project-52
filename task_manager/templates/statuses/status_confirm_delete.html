@@ -1,13 +1,19 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
-<h1>Удалить статус</h1>
+  <h1 class="my-4">{% trans 'Удаление статуса' %}</h1>
+{% if is_used %}
+    <div class="alert alert-danger">
+      {% trans 'Невозможно удалить статус, потому что он используется в задаче' %}
+    </div>
+    <a href="{% url 'statuses:list' %}" class="btn btn-primary">{% trans 'Вернуться к списку' %}</a>
+  {% else %}
+    <p>{% trans 'Вы уверены, что хотите удалить' %} "{{ status.name }}"?</p>
+    <form method="post">
+      {% csrf_token %}
+      <input type="submit" class="btn btn-danger" value="{% trans 'Да, удалить' %}">
 
-<p>Вы уверены, что хотите удалить статус {{ status.name }}?</p>
-
-<form method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger">Удалить</button>
-
-</form>
+    </form>
+  {% endif %}
 {% endblock %}

@@ -1,13 +1,19 @@
 # tasks/urls.py
 from django.urls import path
-from . import views
+from .views import (
+    TaskListView,
+    TaskCreateView,
+    TaskUpdateView,
+    TaskDeleteView,
+    TaskDetailView,
+)
 
-# app_name = 'tasks'  # Это регистрирует namespace 'tasks'
+app_name = 'tasks'  # Это регистрирует namespace 'tasks'
 
 urlpatterns = [
-    path('', views.task_list, name='task_list'),
-    path('create/', views.task_create, name='task_create'),
-    path('<int:pk>/update/', views.task_update, name='task_update'),
-    path('<int:pk>/delete/', views.task_delete, name='task_delete'),
-    path('<int:pk>/', views.task_detail, name='task_detail'),
-]
+    path('', TaskListView.as_view(), name='list'),
+    path('create/', TaskCreateView.as_view(), name='create'),
+    path('<int:pk>/update/', TaskUpdateView.as_view(), name='update'),
+    path('<int:pk>/delete/', TaskDeleteView.as_view(), name='delete'),
+    path('<int:pk>/', TaskDetailView.as_view(), name='detail'),
+    ]
